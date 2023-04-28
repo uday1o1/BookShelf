@@ -1,0 +1,36 @@
+<%- include('../partials/header.ejs') %>
+    <link rel="stylesheet" href="/css/forms.css">
+    <link rel="stylesheet" href="/css/product.css">
+</head>
+
+<body>
+    <%- include('../partials/nav.ejs') %>
+    <main>
+        <form class="product-form" action="/admin/add-product" method="POST">
+
+            <div class="form-control">
+                <label for="title"> Book Title </label>
+                <input type="text" name="title" id="title">
+            </div>
+
+            <div class="form-control">
+                <label for="imgURL"> Image URL </label>
+                <input type="text" name="imgURL" id="imgURL">
+            </div>
+
+            <div class="form-control">
+                <label for="price"> Price </label>
+                <input type="number" name="price" id="price">
+            </div>
+
+            <div class="form-control">
+                <label for="bookInfo"> Book Description </label>
+                <textarea name="bookInfo" id="bookInfo" rows="5"></textarea>
+            </div>
+
+            <button class="btn" type="submit">Add Product</button>
+        </form>
+    </main>
+    <%- include('../partials/end.ejs') %>
+    
+

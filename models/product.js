@@ -1,4 +1,3 @@
-const { json } = require("body-parser");
 const fs = require("fs");
 const path = require("path");
 const mainDir = require("../util/mainDir");
@@ -18,8 +17,11 @@ const readProdFile = (cb) => {
 };
 
 module.exports = class Product {
-  constructor(title) {
+  constructor(title, imgURL, price, bookInfo) {
     this.title = title;
+    this.price = price;
+    this.imgURL = imgURL;
+    this.bookInfo = bookInfo;
   }
 
   //push product to array
