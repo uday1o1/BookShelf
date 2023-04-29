@@ -1,4 +1,5 @@
 const Product = require("../models/product");
+const Cart = require("../models/cart");
 
 exports.getProducts = (req, res, next) => {
   //callback implemented by sending code to render products which will only execute when the fetchProds func has
@@ -34,8 +35,16 @@ exports.getCart = (req, res, next) => {
 };
 
 exports.addToCart = (req, res, next) => {
+  //hidden input in addToCart form sends value of prodId
   const prodId = req.body.cartProdId;
-  res.redirect("/cart");
+  
+  //addToCart func only executed when product fetched using prodId, this is needed as we need,
+  //both prodId and prodPrice for addToCart func
+  Product.fetchProduct(prodId, (fetchedProduct) => {
+    //adding product to card and increase totalPrice
+    Cart.addProdToCart(prodId, fetchedProduct.price);
+    res.redirect("/cart");
+  });
 };
 
 exports.getOrders = (req, res, next) => {
