@@ -17,11 +17,11 @@ const readProdFile = (cb) => {
 };
 
 module.exports = class Product {
-  constructor(title, imgURL, price, bookInfo) {
+  constructor(title, imageURL, price, description) {
     this.title = title;
+    this.imageURL = imageURL;
     this.price = price;
-    this.imgURL = imgURL;
-    this.bookInfo = bookInfo;
+    this.description = description;
   }
 
   //push product to array

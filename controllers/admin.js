@@ -9,12 +9,27 @@ exports.getAddProduct = (req, res, next) => {
 };
 
 exports.postAddProduct = (req, res, next) => {
-  const title = req.body.title;
-  const imgURL = req.body.imgURL;
-  const price = req.body.price;
-  const bookInfo = req.body.bookInfo;
+  let title = req.body.title;
+  let imageURL = req.body.imageURL;
+  let price = req.body.price;
+  let description = req.body.description;
 
-  const prod = new Product(title, imgURL, price, bookInfo);
+  //code just for testing:
+  if(!title) {
+    title = "An interesting book";
+  }
+  if(!imageURL) {
+    imageURL = "https://pngimg.com/uploads/book/book_PNG2111.png";
+  }
+  if(!price) {
+    price = "500";
+  }
+  if(!description) {
+    description = "This is an amazing book";
+  }
+
+  const prod = new Product(title, imageURL, price, description);
+  console.log(title, imageURL, price, description);
   prod.save();
   //reditect to home page
   res.redirect("/");
