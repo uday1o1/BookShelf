@@ -13,11 +13,29 @@ exports.getProducts = (req, res, next) => {
   });
 };
 
+exports.getProduct = (req, res, next) => {
+  const prodId = req.params.prodId;
+  //cb func only executed after fetchedProduct returned
+  Product.fetchProduct(prodId, (fetchedProduct) => {
+    //in render sending singular product whose title, price, etc accessed
+    res.render("shop/product-detail", {
+      product: fetchedProduct,
+      pageTitle: fetchedProduct.title,
+      path: "/products",
+    });
+  });
+};
+
 exports.getCart = (req, res, next) => {
   res.render("shop/cart", {
     pageTitle: "My Shopping Cart",
     path: "/cart",
   });
+};
+
+exports.addToCart = (req, res, next) => {
+  const prodId = req.body.cartProdId;
+  res.redirect("/cart");
 };
 
 exports.getOrders = (req, res, next) => {
@@ -29,6 +47,7 @@ exports.getOrders = (req, res, next) => {
 
 exports.getIndex = (req, res, next) => {
   Product.fetchProducts((products) => {
+    //rendering ejs files at views/shop/index.ejs
     res.render("shop/index", {
       prods: products,
       pageTitle: "Shop",
