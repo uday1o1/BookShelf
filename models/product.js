@@ -1,7 +1,8 @@
-const { json } = require("body-parser");
 const fs = require("fs");
 const path = require("path");
 const mainDir = require("../util/mainDir");
+const generateUniqueId = require('generate-unique-id');
+
 
 const prodPath = path.join(mainDir, "data", "products.json");
 
@@ -18,8 +19,13 @@ const readProdFile = (cb) => {
 };
 
 module.exports = class Product {
-  constructor(title) {
+  constructor(title, imageURL, price, description) {
     this.title = title;
+    this.imageURL = imageURL;
+    this.price = price;
+    this.description = description;
+    //generate unique product id for each product instance
+    this.prodId = generateUniqueId();
   }
 
   //push product to array
@@ -29,7 +35,9 @@ module.exports = class Product {
       products.push(this);
       //push js string as json string
       fs.writeFile(prodPath, JSON.stringify(products), (err) => {
-        console.log(err);
+        if(err) {
+          console.log(err);
+        }
       });
     });
   }
@@ -37,5 +45,13 @@ module.exports = class Product {
   //return whole product array(not single instance)
   static fetchProducts(cb) {
     readProdFile(cb);
+  }
+
+  //for fetching specific product instance based on given prodId, product return inside cb func
+  static fetchProduct(prodId, cb) {
+    readProdFile((products) => {
+      const fetchedProd = products.find(product => product.prodId === prodId);
+      cb(fetchedProd)
+    })
   }
 };
