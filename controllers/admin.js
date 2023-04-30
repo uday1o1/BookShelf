@@ -59,10 +59,18 @@ exports.postEditProduct = (req, res, next) => {
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
-  
+
   //this product instance has prodId already so, func will update and not create new product object
   const newProd = new Product(prodId, title, imageUrl, price, description);
   newProd.save();
 
   res.redirect("/");
+};
+
+exports.postDeleteProduct = (req, res, next) => {
+  const prodId = req.body.prodId;
+  Product.fetchProduct(prodId, (fetchedProduct) => {
+    Product.delete(prodId, fetchedProduct.price);
+    res.redirect("/admin/products");
+  });
 };

@@ -51,4 +51,31 @@ module.exports = class Cart {
       });
     });
   }
+
+  static deleteCartProduct(prodId, prodPrice) {
+    fs.readFile(cartPath, (err, fileContent) => {
+      //if err then file must be not exhisting so push empty array else parse data
+      if (!err) {
+        const cart = JSON.parse(fileContent);
+
+        //fetch index of delted cart product and splice
+        let newCart = { ...cart };
+        const prodIndex = newCart.products.findIndex(
+          (product) => product.prodId === prodId
+        );
+
+        //decrease the total cart value(need product qty and price)
+        const qty = newCart.products[prodIndex].qty;
+        newCart.totalPrice -= qty * prodPrice;
+
+        newCart.products.splice(prodIndex, 1);
+
+        fs.writeFile(cartPath, JSON.stringify(newCart), (err) => {
+          if (err) {
+            console.log(err);
+          }
+        });
+      }
+    });
+  }
 };

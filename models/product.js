@@ -5,6 +5,8 @@ const generateUniqueId = require("generate-unique-id");
 
 const prodPath = path.join(mainDir, "data", "products.json");
 
+const Cart = require("../models/cart");
+
 //function for reading product json file and sending data in callback
 const readProdFile = (cb) => {
   fs.readFile(prodPath, (err, fileContent) => {
@@ -27,7 +29,20 @@ module.exports = class Product {
     this.description = description;
   }
 
-  //save product(push or update)
+  //return whole product array(not single instance)
+  static fetchProducts(cb) {
+    readProdFile(cb);
+  }
+
+  //for fetching specific product instance based on given prodId, product return inside cb func
+  static fetchProduct(prodId, cb) {
+    readProdFile((products) => {
+      const fetchedProd = products.find((product) => product.prodId === prodId);
+      cb(fetchedProd);
+    });
+  }
+
+  //save product(add or update)
   save() {
     //save file process only starts when product array received from callback of read func
     readProdFile((products) => {
@@ -59,16 +74,25 @@ module.exports = class Product {
     });
   }
 
-  //return whole product array(not single instance)
-  static fetchProducts(cb) {
-    readProdFile(cb);
-  }
-
-  //for fetching specific product instance based on given prodId, product return inside cb func
-  static fetchProduct(prodId, cb) {
+  static delete(prodId, prodPrice) {
     readProdFile((products) => {
-      const fetchedProd = products.find((product) => product.prodId === prodId);
-      cb(fetchedProd);
+      const prodIndex = products.findIndex(
+        (product) => product.prodId === prodId
+      );
+
+      let newProducts = [...products];
+      //will remove one product at prodIndex
+      newProducts.splice(prodIndex, 1);
+      console.log(newProducts)
+
+      fs.writeFile(prodPath, JSON.stringify(newProducts), (err) => {
+        if (err) {
+          console.log(err);
+        } else {
+          //no error so, delete product from cart
+          Cart.deleteCartProduct(prodId, prodPrice);
+        }
+      });
     });
   }
 };
