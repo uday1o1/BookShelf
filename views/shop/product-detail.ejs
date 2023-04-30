@@ -7,13 +7,13 @@
             <h1><%= product.title %></h1>
             <hr>
             <div>
-                <img src="<%= product.imageURL %>" alt="<%= product.title %>" height="200px" width="200px">
+                <img src="<%= product.imageUrl %>" alt="<%= product.title %>" height="200px" width="200px">
             </div>
             <h2><%= product.price %>Rs</h2>
             <p><%= product.description %></p>
             <div class="card__actions">
                 <form action="/cart" method="POST">
-                    <button class="btn">Add to Cart</button>
+                    <%- include('../includes/addToCart.ejs') %>
                 </form>
             </div>
         </main>

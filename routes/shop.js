@@ -14,6 +14,8 @@ routes.get("/cart", shopController.getCart);
 //addToCart extracts prodId of product whose details page was opened
 routes.post("/cart", shopController.addToCart);
 
+routes.post("/delete-cart-product", shopController.postDeleteProduct);
+
 routes.get("/orders", shopController.getOrders);
 
 routes.get("/checkout", shopController.getCheckout);
