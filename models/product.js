@@ -1,8 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const mainDir = require("../util/mainDir");
-const generateUniqueId = require('generate-unique-id');
-
+const generateUniqueId = require("generate-unique-id");
 
 const prodPath = path.join(mainDir, "data", "products.json");
 
@@ -19,26 +18,47 @@ const readProdFile = (cb) => {
 };
 
 module.exports = class Product {
-  constructor(title, imageURL, price, description) {
+  //'this' will have current product instance
+  constructor(prodId, title, imageUrl, price, description) {
+    this.prodId = prodId;
     this.title = title;
-    this.imageURL = imageURL;
+    this.imageUrl = imageUrl;
     this.price = price;
     this.description = description;
-    //generate unique product id for each product instance
-    this.prodId = generateUniqueId();
   }
 
-  //push product to array
+  //save product(push or update)
   save() {
     //save file process only starts when product array received from callback of read func
     readProdFile((products) => {
-      products.push(this);
-      //push js string as json string
-      fs.writeFile(prodPath, JSON.stringify(products), (err) => {
-        if(err) {
-          console.log(err);
-        }
-      });
+      //if prodId exists then, updates all other attributes
+      if (this.prodId) {
+        //has index of edited product
+        const prodIndex = products.findIndex(
+          (product) => product.prodId === this.prodId
+        );
+
+        const newProducts = [...products];
+        //replace old product with new product instance
+        newProducts[prodIndex] = this;
+        fs.writeFile(prodPath, JSON.stringify(newProducts), (err) => {
+          if (err) {
+            console.log(err);
+          }
+        });
+      }
+      //if prodId doesn't exist then, make new and push to products array
+      else {
+        //generate unique product id for each product instance
+        this.prodId = generateUniqueId();
+        products.push(this);
+        //push js string as json string
+        fs.writeFile(prodPath, JSON.stringify(products), (err) => {
+          if (err) {
+            console.log(err);
+          }
+        });
+      }
     });
   }
 
@@ -50,8 +70,8 @@ module.exports = class Product {
   //for fetching specific product instance based on given prodId, product return inside cb func
   static fetchProduct(prodId, cb) {
     readProdFile((products) => {
-      const fetchedProd = products.find(product => product.prodId === prodId);
-      cb(fetchedProd)
-    })
+      const fetchedProd = products.find((product) => product.prodId === prodId);
+      cb(fetchedProd);
+    });
   }
 };
