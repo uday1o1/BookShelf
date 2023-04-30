@@ -31,6 +31,8 @@ module.exports = class Product {
   save() {
     //save file process only starts when product array received from callback of read func
     readProdFile((products) => {
+      let newProducts = [];
+
       //if prodId exists then, updates all other attributes
       if (this.prodId) {
         //has index of edited product
@@ -38,27 +40,22 @@ module.exports = class Product {
           (product) => product.prodId === this.prodId
         );
 
-        const newProducts = [...products];
+        newProducts = [...products];
         //replace old product with new product instance
         newProducts[prodIndex] = this;
-        fs.writeFile(prodPath, JSON.stringify(newProducts), (err) => {
-          if (err) {
-            console.log(err);
-          }
-        });
       }
       //if prodId doesn't exist then, make new and push to products array
       else {
         //generate unique product id for each product instance
         this.prodId = generateUniqueId();
-        products.push(this);
-        //push js string as json string
-        fs.writeFile(prodPath, JSON.stringify(products), (err) => {
-          if (err) {
-            console.log(err);
-          }
-        });
+        newProducts = [...products, this];
       }
+
+      fs.writeFile(prodPath, JSON.stringify(newProducts), (err) => {
+        if (err) {
+          console.log(err);
+        }
+      });
     });
   }
 
