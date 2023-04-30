@@ -83,13 +83,12 @@ module.exports = class Product {
       let newProducts = [...products];
       //will remove one product at prodIndex
       newProducts.splice(prodIndex, 1);
-      console.log(newProducts)
 
       fs.writeFile(prodPath, JSON.stringify(newProducts), (err) => {
         if (err) {
           console.log(err);
         } else {
-          //no error so, delete product from cart
+          //no error so, delete product from cart aswell
           Cart.deleteCartProduct(prodId, prodPrice);
         }
       });

@@ -34,6 +34,7 @@ module.exports = class Cart {
       else {
         newProduct = { ...cart.products[oldProdIndex] };
         newProduct.qty = newProduct.qty + 1;
+        cart.products = [...cart.products];
 
         //replacing oldProduct with newProduct
         cart.products[oldProdIndex] = newProduct;
@@ -64,11 +65,22 @@ module.exports = class Cart {
           (product) => product.prodId === prodId
         );
 
+        //if prodIndex is '-1' means product being deleted(admin) not in cart so,
+        //no need to delete from cart only in main prodList(admin)
+        if(prodIndex === -1) {
+          return;
+        }
+
         //decrease the total cart value(need product qty and price)
         const qty = newCart.products[prodIndex].qty;
         newCart.totalPrice -= qty * prodPrice;
 
         newCart.products.splice(prodIndex, 1);
+
+        //if no product left in cart then totalPrice = 0
+        if (newCart.products.length === 0) {
+          newCart.totalPrice = 0;
+        }
 
         fs.writeFile(cartPath, JSON.stringify(newCart), (err) => {
           if (err) {
@@ -76,6 +88,19 @@ module.exports = class Cart {
           }
         });
       }
+    });
+  }
+
+  static fetchCart(cb) {
+    //fetching all products from cart and sending as callback to func
+    fs.readFile(cartPath, (err, fileContent) => {
+      if (!err) {
+        const cart = JSON.parse(fileContent);
+        return cb(cart);
+      } else {
+        console.log(err);
+      }
+      return cb(err);
     });
   }
 };
