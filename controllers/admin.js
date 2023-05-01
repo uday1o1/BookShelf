@@ -1,13 +1,18 @@
 const Product = require("../models/product");
+const generateUniqueId = require("generate-unique-id");
 
 exports.getProducts = (req, res, next) => {
-  Product.fetchProducts((products) => {
-    res.render("admin/products", {
-      prods: products,
-      pageTitle: "Admin Products",
-      path: "/admin/products",
+  Product.findAll()
+    .then((products) => {
+      res.render("admin/products", {
+        prods: products,
+        pageTitle: "Admin Products",
+        path: "/admin/products",
+      });
+    })
+    .catch((err) => {
+      console.log(err);
     });
-  });
 };
 
 exports.getAddProduct = (req, res, next) => {
@@ -21,15 +26,26 @@ exports.getAddProduct = (req, res, next) => {
 };
 
 exports.postAddProduct = (req, res, next) => {
+  const prodId = generateUniqueId();
   const title = req.body.title;
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
 
-  const prod = new Product(null, title, imageUrl, price, description);
-  prod.save();
-  //reditect to home page
-  res.redirect("/");
+  Product.create({
+    prodId: prodId,
+    title: title,
+    imageUrl: imageUrl,
+    price: price,
+    description: description,
+  })
+    .then((result) => {
+      //redirect to home page when data inserted in table
+      res.redirect("/");
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 };
 
 exports.getEditProduct = (req, res, next) => {
@@ -42,15 +58,19 @@ exports.getEditProduct = (req, res, next) => {
   //editMode also sent so that form can have prevous product data preloaded for editing,
   //else new product so empty form
   //need to fetch product as it's attributes accessed to populate ejs form
-  Product.fetchProduct(prodId, (fetchedProduct) => {
-    res.render("admin/editProduct", {
-      pageTitle: "Edit Product",
-      editMode: editMode,
-      product: fetchedProduct,
-      //sending empty path as it was being accessed in ejs file includes
-      path: "",
+  Product.findByPk(prodId)
+    .then((fetchedProduct) => {
+      res.render("admin/editProduct", {
+        pageTitle: "Edit Product",
+        editMode: editMode,
+        product: fetchedProduct,
+        //sending empty path as it was being accessed in ejs file includes
+        path: "",
+      });
+    })
+    .catch((err) => {
+      console.log(err);
     });
-  });
 };
 
 exports.postEditProduct = (req, res, next) => {
@@ -60,17 +80,37 @@ exports.postEditProduct = (req, res, next) => {
   const price = req.body.price;
   const description = req.body.description;
 
-  //this product instance has prodId already so, func will update and not create new product object
-  const newProd = new Product(prodId, title, imageUrl, price, description);
-  newProd.save();
-
-  res.redirect("/");
+  Product.update(
+    {
+      title: title,
+      imageUrl: imageUrl,
+      price: price,
+      description: description,
+    },
+    { where: { prodId: prodId } }
+  )
+    .then((result) => {
+      console.log(result);
+      res.redirect("/");
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 };
 
 exports.postDeleteProduct = (req, res, next) => {
   const prodId = req.body.prodId;
-  Product.fetchProduct(prodId, (fetchedProduct) => {
-    Product.delete(prodId, fetchedProduct.price);
-    res.redirect("/admin/products");
-  });
+
+  //destroys the product record then, redirects if successful
+  Product.destroy({
+    where: {
+      prodId: prodId,
+    },
+  })
+    .then(() => {
+      res.redirect("/admin/products");
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 };

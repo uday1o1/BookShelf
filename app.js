@@ -1,6 +1,10 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
+
+//import mySql connection pool func
+const sequelize = require("./util/database");
+
 //returns a new express app instance when the express() func is run, can be used to init server
 const app = express();
 
@@ -17,7 +21,6 @@ app.use(express.static(path.join(__dirname, "public")));
 //routes and controllers imported
 const adminRoute = require("./routes/admin");
 const shopRoute = require("./routes/shop");
-
 const error = require("./controllers/error");
 
 //use body parser to parse through incoming data stream, put on top of order
@@ -30,5 +33,14 @@ app.use(shopRoute);
 //handle all others url reqs
 app.use("/", error.err404);
 
-//to create server on express app and start listening
-app.listen(3000);
+//.sync() will create & sync table of all models in the database
+sequelize
+  .sync()
+  .then((result) => {
+    console.log(result);
+    //to create server on express app and start listening
+    app.listen(3000);
+  })
+  .catch((err) => {
+    console.log(err);
+  });
