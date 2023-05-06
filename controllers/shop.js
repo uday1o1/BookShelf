@@ -1,8 +1,24 @@
 const Product = require("../models/product");
 const Cart = require("../models/cart");
 
+exports.getIndex = (req, res, next) => {
+  //returns all products in admin catalog
+  Product.fetchAllProducts()
+    .then((products) => {
+      //rendering ejs files at views/shop/index.ejs
+      res.render("shop/index", {
+        prods: products,
+        pageTitle: "Shop",
+        path: "/",
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
+
 exports.getProducts = (req, res, next) => {
-  Product.findAll()
+  Product.fetchAllProducts()
     .then((products) => {
       res.render("shop/product-list", {
         prods: products,
@@ -19,7 +35,7 @@ exports.getProduct = (req, res, next) => {
   const prodId = req.params.prodId;
 
   //findByPk find specific object using primary key
-  Product.findByPk(prodId)
+  Product.fetchProduct(prodId)
     .then((fetchedProduct) => {
       //in render sending singular product whose title, price, etc accessed
       res.render("shop/product-detail", {
@@ -91,22 +107,6 @@ exports.getOrders = (req, res, next) => {
     pageTitle: "My Orders",
     path: "/orders",
   });
-};
-
-exports.getIndex = (req, res, next) => {
-  //sequelize func that returns all product records
-  Product.findAll()
-    .then((products) => {
-      //rendering ejs files at views/shop/index.ejs
-      res.render("shop/index", {
-        prods: products,
-        pageTitle: "Shop",
-        path: "/",
-      });
-    })
-    .catch((err) => {
-      console.log(err);
-    });
 };
 
 exports.getCheckout = (req, res, next) => {

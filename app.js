@@ -2,8 +2,8 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
 
-//import mySql connection pool func
-const sequelize = require("./util/database");
+//returns mongoClient in cb
+const mongoConnect = require("./util/database").mongoConnect;
 
 //returns a new express app instance when the express() func is run, can be used to init server
 const app = express();
@@ -33,14 +33,7 @@ app.use(shopRoute);
 //handle all others url reqs
 app.use("/", error.err404);
 
-//.sync() will create & sync table of all models in the database
-sequelize
-  .sync()
-  .then((result) => {
-    console.log(result);
-    //to create server on express app and start listening
-    app.listen(3000);
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+// start listening when client retreived from db
+mongoConnect(() => {
+  app.listen(3000);
+})
