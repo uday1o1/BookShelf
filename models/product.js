@@ -1,25 +1,38 @@
 const getDb = require("../util/database").getDb;
-const ObjectId = require('mongodb').ObjectId; 
-
+const ObjectId = require("mongodb").ObjectId;
 
 class Product {
-  constructor(title, imageUrl, price, description) {
+  constructor(title, imageUrl, price, description, _id) {
     this.title = title;
     this.imageUrl = imageUrl;
     this.price = price;
     this.description = description;
+    if (_id) {
+      //object id being accessed should me bson object id
+      this._id = new ObjectId(_id);
+    }
   }
 
   saveProduct() {
     const db = getDb();
+    //will have either new or update product object
+    let prodUpdate;
     //db.collection creates products and accesses collection in db
     //insertOne to insert single product instance to db collection
     //return result got after inserting product to collection as when result got then,
     //we can continue pager render
     console.log(this);
-    return db
-      .collection("products")
-      .insertOne(this)
+    //_id null means create new prod(insertOne) and save else update prod(updateOne)
+    if (!this._id) {
+      prodUpdate = db.collection("products").insertOne(this);
+    } else {
+      //update need an attribute to find object in db,
+      //and action when found(here "$set" to replace all prod attributes with new "this" instance)
+      prodUpdate = db
+        .collection("products")
+        .updateOne({ _id: this._id }, { $set: this });
+    }
+    return prodUpdate
       .then((result) => {
         console.log(result);
       })
@@ -54,7 +67,7 @@ class Product {
     // use next() to go to first(and here last also) prod in received data
     return db
       .collection("products")
-      .find({_id: new ObjectId(_id)})
+      .find({ _id: new ObjectId(_id) })
       .next()
       .then((product) => {
         console.log(product);
@@ -63,6 +76,20 @@ class Product {
       .catch((err) => {
         console.log(err);
       });
+  }
+
+  static deleteProduct (_id) {
+    const db = getDb();
+    //deleteOne func similar to update one func which take bson objectId
+    return db
+    .collection("products")
+    .deleteOne({ _id: new ObjectId(_id) },)
+    .then((result) => {
+      console.log(result);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
   }
 }
 module.exports = Product;

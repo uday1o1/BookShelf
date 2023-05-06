@@ -1,4 +1,6 @@
 const Product = require("../models/product");
+const ObjectId = require("mongodb").ObjectId;
+
 
 exports.getProducts = (req, res, next) => {
   Product.fetchAllProducts()
@@ -30,7 +32,7 @@ exports.postAddProduct = (req, res, next) => {
   const price = req.body.price;
   const description = req.body.description;
 
-  const prod = new Product(title, imageUrl, price, description);
+  const prod = new Product(title, imageUrl, price, description, null);
   prod
     .saveProduct()
     .then((result) => {
@@ -43,69 +45,61 @@ exports.postAddProduct = (req, res, next) => {
     });
 };
 
-// exports.getEditProduct = (req, res, next) => {
-//   //fetching the productId of item to be eddited from url parameters
-//   const prodId = req.params.prodId;
-//   //fetching query from url, which will be true if in editMode
-//   //query will be accessed from part of url after '?' as key:value pairs, where each query is separated by '&'
-//   const editMode = req.query.editMode;
+exports.getEditProduct = (req, res, next) => {
+  //fetching the productId of item to be eddited from url parameters
+  const _id = req.params.prodId;
+  //fetching query from url, which will be true if in editMode
+  //query will be accessed from part of url after '?' as key:value pairs, where each query is separated by '&'
+  const editMode = req.query.editMode;
 
-//   //editMode also sent so that form can have prevous product data preloaded for editing,
-//   //else new product so empty form
-//   //need to fetch product as it's attributes accessed to populate ejs form
-//   Product.findByPk(prodId)
-//     .then((fetchedProduct) => {
-//       res.render("admin/editProduct", {
-//         pageTitle: "Edit Product",
-//         editMode: editMode,
-//         product: fetchedProduct,
-//         //sending empty path as it was being accessed in ejs file includes
-//         path: "",
-//       });
-//     })
-//     .catch((err) => {
-//       console.log(err);
-//     });
-// };
+  //editMode also sent so that form can have prevous product data preloaded for editing,
+  //else new product so empty form
+  //need to fetch product as it's attributes accessed to populate ejs form
+  Product.fetchProduct(_id)
+    .then((fetchedProduct) => {
+      res.render("admin/editProduct", {
+        pageTitle: "Edit Product",
+        editMode: editMode,
+        product: fetchedProduct,
+        //sending empty path as it was being accessed in ejs file
+        path: "",
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
 
-// exports.postEditProduct = (req, res, next) => {
-//   const prodId = req.body.prodId;
-//   const title = req.body.title;
-//   const imageUrl = req.body.imageUrl;
-//   const price = req.body.price;
-//   const description = req.body.description;
+exports.postEditProduct = (req, res, next) => {
+  // console.log(req.params.prodId)
+  const _id = req.body._id;
+  const title = req.body.title;
+  const imageUrl = req.body.imageUrl;
+  const price = req.body.price;
+  const description = req.body.description;
 
-//   Product.update(
-//     {
-//       title: title,
-//       imageUrl: imageUrl,
-//       price: price,
-//       description: description,
-//     },
-//     { where: { prodId: prodId } }
-//   )
-//     .then((result) => {
-//       console.log(result);
-//       res.redirect("/");
-//     })
-//     .catch((err) => {
-//       console.log(err);
-//     });
-// };
+  const prod = new Product(title, imageUrl, price, description, _id);
 
-// exports.postDeleteProduct = (req, res, next) => {
-//   const prodId = req.body.prodId;
+  prod
+    .saveProduct()
+    .then((result) => {
+      console.log("updated product");
+      res.redirect("/admin/products");
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
 
-//   //destroys the product record then, redirects if successful
-//   Product.destroy({
-//     where: {
-//       prodId: prodId,
-//     },
-//   })
-//     .then(() => {
-//       res.redirect("/admin/products");
-//     })
-//     .catch((err) => {
-//       console.log(err);
-//     });
-// };
+exports.postDeleteProduct = (req, res, next) => {
+  const _id = req.body._id;
+
+  //destroys the product record then, redirects if successful
+  Product.deleteProduct(_id)
+    .then(() => {
+      res.redirect("/admin/products");
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
