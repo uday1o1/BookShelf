@@ -1,7 +1,6 @@
 const Product = require("../models/product");
 const ObjectId = require("mongodb").ObjectId;
 
-
 exports.getProducts = (req, res, next) => {
   Product.fetchAllProducts()
     .then((products) => {
@@ -31,8 +30,9 @@ exports.postAddProduct = (req, res, next) => {
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
+  const user_id = req.user._id;
 
-  const prod = new Product(title, imageUrl, price, description, null);
+  const prod = new Product(title, imageUrl, price, description, null, user_id);
   prod
     .saveProduct()
     .then((result) => {
@@ -77,8 +77,9 @@ exports.postEditProduct = (req, res, next) => {
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
+  const user_id = req.user._id;
 
-  const prod = new Product(title, imageUrl, price, description, _id);
+  const prod = new Product(title, imageUrl, price, description, _id, user_id);
 
   prod
     .saveProduct()

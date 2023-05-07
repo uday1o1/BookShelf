@@ -2,15 +2,16 @@ const getDb = require("../util/database").getDb;
 const ObjectId = require("mongodb").ObjectId;
 
 class Product {
-  constructor(title, imageUrl, price, description, _id) {
+  constructor(title, imageUrl, price, description, _id, user_id) {
     this.title = title;
     this.imageUrl = imageUrl;
-    this.price = price;
+    this.price = parseFloat(price);
     this.description = description;
     if (_id) {
       //object id being accessed should me bson object id
       this._id = new ObjectId(_id);
     }
+    this.user_id = user_id;
   }
 
   saveProduct() {
@@ -50,7 +51,6 @@ class Product {
       .find()
       .toArray()
       .then((products) => {
-        console.log(products);
         return products;
       })
       .catch((err) => {
@@ -67,8 +67,7 @@ class Product {
     // use next() to go to first(and here last also) prod in received data
     return db
       .collection("products")
-      .find({ _id: new ObjectId(_id) })
-      .next()
+      .findOne({ _id: new ObjectId(_id) })
       .then((product) => {
         console.log(product);
         return product;
@@ -78,18 +77,18 @@ class Product {
       });
   }
 
-  static deleteProduct (_id) {
+  static deleteProduct(_id) {
     const db = getDb();
     //deleteOne func similar to update one func which take bson objectId
     return db
-    .collection("products")
-    .deleteOne({ _id: new ObjectId(_id) },)
-    .then((result) => {
-      console.log(result);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+      .collection("products")
+      .deleteOne({ _id: new ObjectId(_id) })
+      .then((result) => {
+        console.log(result);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }
 }
 module.exports = Product;

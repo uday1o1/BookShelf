@@ -4,6 +4,7 @@ const path = require("path");
 
 //returns mongoClient in cb
 const mongoConnect = require("./util/database").mongoConnect;
+const User = require("./models/user");
 
 //returns a new express app instance when the express() func is run, can be used to init server
 const app = express();
@@ -17,6 +18,19 @@ app.set("views", "views");
 //assigning a folder so that it can serve static files
 //all req going inside already take the path public so inside put path after public for links
 app.use(express.static(path.join(__dirname, "public")));
+
+//testUser login(no routes, every request goes through a "user")
+app.use((req, res, next) => {
+  User.fetchUser("6457162054f13ccb94efe3de")
+    .then((user) => {
+      //add complete user instance to each user request(needed to access all user functions)
+      req.user = new User(user.username, user.email, user.cart, user._id);
+      next();
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+});
 
 //routes and controllers imported
 const adminRoute = require("./routes/admin");
@@ -36,4 +50,4 @@ app.use("/", error.err404);
 // start listening when client retreived from db
 mongoConnect(() => {
   app.listen(3000);
-})
+});

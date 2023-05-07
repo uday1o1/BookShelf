@@ -18,7 +18,6 @@ const mongoConnect = (cb) => {
       console.log(err);
     });
 };
-
 //returns object for connection access
 const getDb = () => {
   if(dbConnect) {
