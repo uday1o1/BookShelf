@@ -1,5 +1,0 @@
-1. fix cart display issue
-2. update cart prods and totalPrice on prod edit
-3. implement firebase in project
-4. add authentication(if admin then special privilidges provided)
-5. orders route which we can go when we click checkout in cart(checkout should also delete all cart products)
