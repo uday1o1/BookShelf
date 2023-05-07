@@ -37,7 +37,7 @@ exports.postAddProduct = (req, res, next) => {
     .saveProduct()
     .then((result) => {
       //result only gotten when product object created and saved to db collection
-      console.log("added new product");
+      console.log("added new product to catalog");
       res.redirect("/admin/products");
     })
     .catch((err) => {
@@ -71,7 +71,6 @@ exports.getEditProduct = (req, res, next) => {
 };
 
 exports.postEditProduct = (req, res, next) => {
-  // console.log(req.params.prodId)
   const _id = req.body._id;
   const title = req.body.title;
   const imageUrl = req.body.imageUrl;
@@ -84,7 +83,7 @@ exports.postEditProduct = (req, res, next) => {
   prod
     .saveProduct()
     .then((result) => {
-      console.log("updated product");
+      console.log("updated product in catalog");
       res.redirect("/admin/products");
     })
     .catch((err) => {
@@ -94,13 +93,25 @@ exports.postEditProduct = (req, res, next) => {
 
 exports.postDeleteProduct = (req, res, next) => {
   const _id = req.body._id;
-
-  //destroys the product record then, redirects if successful
-  Product.deleteProduct(_id)
-    .then(() => {
-      res.redirect("/admin/products");
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+  //before deleting whole product need to delete it from cart first,
+  //to delete, fetch the prod to be deleted(as it's price info is needed to update totalPrice) then,
+  //deleted it from cart
+  Product.fetchProduct(_id).then((product) => {
+    req.user
+      .deleteProdFromCart(product)
+      .then(() => {
+        console.log("product deleted from cart");
+      })
+      .then(() => {
+        //deleted product from catalog
+        Product.deleteProduct(_id);
+      })
+      .then(() => {
+        console.log("deleted product from catalog");
+        res.redirect("/admin/products");
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  });
 };

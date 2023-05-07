@@ -10,12 +10,12 @@ routes.get("/products", shopController.getProducts);
 // //prod id will be the mongoDb object unique id
 routes.get("/products/:prodId", shopController.getProduct);
 
-// routes.get("/cart", shopController.getCart);
+routes.get("/cart", shopController.getCart);
 
 // //addToCart extracts prodId of product whose details page was opened
 routes.post("/cart", shopController.addToCart);
 
-// routes.post("/delete-cart-product", shopController.postDeleteProduct);
+routes.post("/delete-cart-product", shopController.postDeleteProduct);
 
 // routes.get("/orders", shopController.getOrders);
 

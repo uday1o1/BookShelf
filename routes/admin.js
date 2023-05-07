@@ -12,6 +12,4 @@ routes.post("/delete-product", adminController.postDeleteProduct);
 
 routes.get("/products", adminController.getProducts);
 
-
-
 module.exports = routes;

@@ -1,32 +1,47 @@
 <%- include('../includes/head.ejs') %>
-    <link rel="stylesheet" href="/css/cart.css">
+    <link rel="stylesheet" href="/css/product.css">
     </head>
 
     <body>
         <%- include('../includes/navigation.ejs') %>
-        <main>
-            <% if (products.length > 0) { %>
-                <ul class="cart__item-list">
-                    <% products.forEach(prod => { %>
-                        <li class="cart__item">
-                            <h1><%= prod.title %></h1>
-                            <h2>Quantity: <%= prod.qty %></h2>
-                            <form action="/cart-delete-item" method="POST">
-                                <input type="hidden" value="<%= prod._id %>" name="productId">
-                                <button class="btn danger" type="submit">Delete</button>
+
+        <h1>Total Price = <%= totalPrice %>Rs</h1>
+
+        <% if (products.length > 0) { %>
+            <div class="grid">
+                <% for (let prod of products) { %>
+
+                    <article class="card product-item">
+
+                        <header class="card__header">
+                            <h1 class="product__title">
+                                <%= prod.title %>
+                            </h1>
+                        </header>
+                        <div class="card__image">
+                            <img src="<%= prod.imageUrl %>" alt="<%= prod.title %>">
+                        </div>
+                        <div class="card__content">
+                            <h2 class="product__price"><%= prod.price %>Rs</h2>
+                            <p class="product__description">
+                                <%= prod.description %>
+                            </p>
+                            <h2 class="product__qty">Qty : <%= prod.qty %></h2>
+                        </div>
+                        <div class="card__actions">
+                            <form action="/delete-cart-product" method="POST">
+                                <input type="hidden" value="<%= prod._id %>" name="cartProd_id">
+                                <button class="btn" type="submit">Delete</button>
                             </form>
-                        </li>
-                    <% }) %>
-                </ul>
-                <hr>
-                <div class="centered">
-                    <form action="/create-order" method="POST">
-                        <button type="submit" class="btn">Order Now!</button>
-                    </form>
-                </div>
-                
+                        </div>
+
+                    </article>
+
+                <% } %>
+            </div>
             <% } else { %>
-                <h1>No Products in Cart!</h1>
-            <% } %>
-        </main>
+                <h1>No Products Added To Cart!</h1>
+                <% } %>
+            
+
         <%- include('../includes/end.ejs') %>

@@ -59,7 +59,7 @@ module.exports = class Cart {
       if (!err) {
         const cart = JSON.parse(fileContent);
 
-        //fetch index of delted cart product and splice
+        //fetch index of deleted cart product and splice
         let newCart = { ...cart };
         const prodIndex = newCart.products.findIndex(
           (product) => product.prodId === prodId

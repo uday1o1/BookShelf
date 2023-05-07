@@ -22,7 +22,6 @@ class Product {
     //insertOne to insert single product instance to db collection
     //return result got after inserting product to collection as when result got then,
     //we can continue pager render
-    console.log(this);
     //_id null means create new prod(insertOne) and save else update prod(updateOne)
     if (!this._id) {
       prodUpdate = db.collection("products").insertOne(this);
@@ -69,7 +68,6 @@ class Product {
       .collection("products")
       .findOne({ _id: new ObjectId(_id) })
       .then((product) => {
-        console.log(product);
         return product;
       })
       .catch((err) => {
@@ -84,7 +82,7 @@ class Product {
       .collection("products")
       .deleteOne({ _id: new ObjectId(_id) })
       .then((result) => {
-        console.log(result);
+        console.log("delteted product from catalog");
       })
       .catch((err) => {
         console.log(err);
