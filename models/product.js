@@ -1,97 +1,94 @@
-const fs = require("fs");
-const path = require("path");
-const mainDir = require("../util/mainDir");
-const generateUniqueId = require("generate-unique-id");
+const getDb = require("../util/database").getDb;
+const ObjectId = require("mongodb").ObjectId;
 
-const prodPath = path.join(mainDir, "data", "products.json");
-
-const Cart = require("../models/cart");
-
-//function for reading product json file and sending data in callback
-const readProdFile = (cb) => {
-  fs.readFile(prodPath, (err, fileContent) => {
-    let products = [];
-    //if err then file must be not exhisting so push empty array else parse data
-    if (!err) {
-      products = JSON.parse(fileContent);
-    }
-    return cb(products);
-  });
-};
-
-module.exports = class Product {
-  //'this' will have current product instance
-  constructor(prodId, title, imageUrl, price, description) {
-    this.prodId = prodId;
+class Product {
+  constructor(title, imageUrl, price, description, _id, user_id) {
     this.title = title;
     this.imageUrl = imageUrl;
-    this.price = price;
+    this.price = parseFloat(price);
     this.description = description;
+    if (_id) {
+      //object id being accessed should me bson object id
+      this._id = new ObjectId(_id);
+    }
+    this.user_id = user_id;
   }
 
-  //return whole product array(not single instance)
-  static fetchProducts(cb) {
-    readProdFile(cb);
-  }
-
-  //for fetching specific product instance based on given prodId, product return inside cb func
-  static fetchProduct(prodId, cb) {
-    readProdFile((products) => {
-      const fetchedProd = products.find((product) => product.prodId === prodId);
-      cb(fetchedProd);
-    });
-  }
-
-  //save product(add or update)
-  save() {
-    //save file process only starts when product array received from callback of read func
-    readProdFile((products) => {
-      let newProducts = [];
-
-      //if prodId exists then, updates all other attributes
-      if (this.prodId) {
-        //has index of edited product
-        const prodIndex = products.findIndex(
-          (product) => product.prodId === this.prodId
-        );
-
-        newProducts = [...products];
-        //replace old product with new product instance
-        newProducts[prodIndex] = this;
-      }
-      //if prodId doesn't exist then, make new and push to products array
-      else {
-        //generate unique product id for each product instance
-        this.prodId = generateUniqueId();
-        newProducts = [...products, this];
-      }
-
-      fs.writeFile(prodPath, JSON.stringify(newProducts), (err) => {
-        if (err) {
-          console.log(err);
-        }
+  saveProduct() {
+    const db = getDb();
+    //will have either new or update product object
+    let prodUpdate;
+    //db.collection creates products and accesses collection in db
+    //insertOne to insert single product instance to db collection
+    //return result got after inserting product to collection as when result got then,
+    //we can continue pager render
+    console.log(this);
+    //_id null means create new prod(insertOne) and save else update prod(updateOne)
+    if (!this._id) {
+      prodUpdate = db.collection("products").insertOne(this);
+    } else {
+      //update need an attribute to find object in db,
+      //and action when found(here "$set" to replace all prod attributes with new "this" instance)
+      prodUpdate = db
+        .collection("products")
+        .updateOne({ _id: this._id }, { $set: this });
+    }
+    return prodUpdate
+      .then((result) => {
+        console.log(result);
+      })
+      .catch((err) => {
+        console.log(err);
       });
-    });
   }
 
-  static delete(prodId, prodPrice) {
-    readProdFile((products) => {
-      const prodIndex = products.findIndex(
-        (product) => product.prodId === prodId
-      );
-
-      let newProducts = [...products];
-      //will remove one product at prodIndex
-      newProducts.splice(prodIndex, 1);
-
-      fs.writeFile(prodPath, JSON.stringify(newProducts), (err) => {
-        if (err) {
-          console.log(err);
-        } else {
-          //no error so, delete product from cart aswell
-          Cart.deleteCartProduct(prodId, prodPrice);
-        }
+  static fetchAllProducts() {
+    const db = getDb();
+    //find return cursor to database bson file,
+    //not the data
+    return db
+      .collection("products")
+      .find()
+      .toArray()
+      .then((products) => {
+        return products;
+      })
+      .catch((err) => {
+        console.log(err);
       });
-    });
   }
-};
+
+  static fetchProduct(_id) {
+    const db = getDb();
+    //return product with specified _id
+    //to give specific _id as it's special bson format id need to invoke objectId constructor
+    //from mongoDb specially for _id attribute
+    //find() returns cursor to traverse all prods received,
+    // use next() to go to first(and here last also) prod in received data
+    return db
+      .collection("products")
+      .findOne({ _id: new ObjectId(_id) })
+      .then((product) => {
+        console.log(product);
+        return product;
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }
+
+  static deleteProduct(_id) {
+    const db = getDb();
+    //deleteOne func similar to update one func which take bson objectId
+    return db
+      .collection("products")
+      .deleteOne({ _id: new ObjectId(_id) })
+      .then((result) => {
+        console.log(result);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }
+}
+module.exports = Product;

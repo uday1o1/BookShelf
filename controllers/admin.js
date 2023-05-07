@@ -1,13 +1,18 @@
 const Product = require("../models/product");
+const ObjectId = require("mongodb").ObjectId;
 
 exports.getProducts = (req, res, next) => {
-  Product.fetchProducts((products) => {
-    res.render("admin/products", {
-      prods: products,
-      pageTitle: "Admin Products",
-      path: "/admin/products",
+  Product.fetchAllProducts()
+    .then((products) => {
+      res.render("admin/products", {
+        prods: products,
+        pageTitle: "Admin Products",
+        path: "/admin/products",
+      });
+    })
+    .catch((err) => {
+      console.log(err);
     });
-  });
 };
 
 exports.getAddProduct = (req, res, next) => {
@@ -25,16 +30,24 @@ exports.postAddProduct = (req, res, next) => {
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
+  const user_id = req.user._id;
 
-  const prod = new Product(null, title, imageUrl, price, description);
-  prod.save();
-  //reditect to home page
-  res.redirect("/");
+  const prod = new Product(title, imageUrl, price, description, null, user_id);
+  prod
+    .saveProduct()
+    .then((result) => {
+      //result only gotten when product object created and saved to db collection
+      console.log("added new product");
+      res.redirect("/admin/products");
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 };
 
 exports.getEditProduct = (req, res, next) => {
   //fetching the productId of item to be eddited from url parameters
-  const prodId = req.params.prodId;
+  const _id = req.params.prodId;
   //fetching query from url, which will be true if in editMode
   //query will be accessed from part of url after '?' as key:value pairs, where each query is separated by '&'
   const editMode = req.query.editMode;
@@ -42,35 +55,52 @@ exports.getEditProduct = (req, res, next) => {
   //editMode also sent so that form can have prevous product data preloaded for editing,
   //else new product so empty form
   //need to fetch product as it's attributes accessed to populate ejs form
-  Product.fetchProduct(prodId, (fetchedProduct) => {
-    res.render("admin/editProduct", {
-      pageTitle: "Edit Product",
-      editMode: editMode,
-      product: fetchedProduct,
-      //sending empty path as it was being accessed in ejs file includes
-      path: "",
+  Product.fetchProduct(_id)
+    .then((fetchedProduct) => {
+      res.render("admin/editProduct", {
+        pageTitle: "Edit Product",
+        editMode: editMode,
+        product: fetchedProduct,
+        //sending empty path as it was being accessed in ejs file
+        path: "",
+      });
+    })
+    .catch((err) => {
+      console.log(err);
     });
-  });
 };
 
 exports.postEditProduct = (req, res, next) => {
-  const prodId = req.body.prodId;
+  // console.log(req.params.prodId)
+  const _id = req.body._id;
   const title = req.body.title;
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
+  const user_id = req.user._id;
 
-  //this product instance has prodId already so, func will update and not create new product object
-  const newProd = new Product(prodId, title, imageUrl, price, description);
-  newProd.save();
+  const prod = new Product(title, imageUrl, price, description, _id, user_id);
 
-  res.redirect("/");
+  prod
+    .saveProduct()
+    .then((result) => {
+      console.log("updated product");
+      res.redirect("/admin/products");
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 };
 
 exports.postDeleteProduct = (req, res, next) => {
-  const prodId = req.body.prodId;
-  Product.fetchProduct(prodId, (fetchedProduct) => {
-    Product.delete(prodId, fetchedProduct.price);
-    res.redirect("/admin/products");
-  });
+  const _id = req.body._id;
+
+  //destroys the product record then, redirects if successful
+  Product.deleteProduct(_id)
+    .then(() => {
+      res.redirect("/admin/products");
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 };

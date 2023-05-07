@@ -35,7 +35,7 @@
             <button class="btn" type="submit"><%= editMode === 'true' ? "Edit Product" : "Add Product" %></button>
 
             <% if(editMode) { %>
-                <input type="hidden" name = "prodId" value="<%= product.prodId %>">
+                <input type="hidden" name = "_id" value="<%= product._id %>">
             <% } %>
         </form>
     </main>
