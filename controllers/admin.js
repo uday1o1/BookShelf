@@ -97,21 +97,38 @@ exports.postDeleteProduct = (req, res, next) => {
   //to delete, fetch the prod to be deleted(as it's price info is needed to update totalPrice) then,
   //deleted it from cart
   Product.fetchProduct(_id).then((product) => {
-    req.user
-      .deleteProdFromCart(product)
-      .then(() => {
-        console.log("product deleted from cart");
-      })
-      .then(() => {
-        //deleted product from catalog
-        Product.deleteProduct(_id);
-      })
-      .then(() => {
-        console.log("deleted product from catalog");
-        res.redirect("/admin/products");
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    const cartProductIndex = req.user.cart.products.findIndex((prod) => {
+      return prod._id.toString() === product._id.toString();
+    });
+    //if cartIndex = -1, so prod not in cart so only delete from catalog,
+    //no need to call deleteCartFunc
+    if (cartProductIndex === -1) {
+      //deleted product from catalog
+      Product.deleteProduct(_id)
+        .then(() => {
+          console.log("deleted product from catalog");
+          res.redirect("/admin/products");
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    } else {
+      req.user
+        .deleteProdFromCart(product)
+        .then(() => {
+          console.log("product deleted from cart");
+        })
+        .then(() => {
+          //deleted product from catalog
+          Product.deleteProduct(_id);
+        })
+        .then(() => {
+          console.log("deleted product from catalog");
+          res.redirect("/admin/products");
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
   });
 };
