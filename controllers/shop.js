@@ -1,5 +1,4 @@
 const Product = require("../models/product");
-const Cart = require("../models/cart");
 const User = require("../models/user");
 
 exports.getIndex = (req, res, next) => {
@@ -51,34 +50,33 @@ exports.getProduct = (req, res, next) => {
 };
 
 exports.getCart = (req, res, next) => {
-  //need to fetch all cart products then, find all products(general product model) which are in cart
-  Cart.fetchCart((cart) => {
-    const cartProducts = [];
-    let cartProduct = { cartProdData: {}, qty: 0 };
+  req.user
+    .getCart()
+    .then((cartProducts) => {
+      res.render("shop/cart", {
+        pageTitle: "My Shopping Cart",
+        path: "/cart",
+        //array of received cartProds
+        products: cartProducts,
+        //directly use from userCartData
+        totalPrice: req.user.cart.totalPrice,
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
 
-    //fetching all products then pushing the products whose,
-    //prodId is also in cartProducts
-    Product.findAll()
-      .then((products) => {
-        for (prod of products) {
-          //checking each general product with all all cart products
-          const prodFoundInCart = cart.products.find(
-            (product) => product.prodId === prod.prodId
-          );
-          //if product found in cart
-          if (prodFoundInCart) {
-            cartProduct.cartProdData = prod;
-            cartProduct.qty = prodFoundInCart.qty;
-            cartProducts.push(cartProduct);
-          }
-        }
-
-        res.render("shop/cart", {
-          pageTitle: "My Shopping Cart",
-          path: "/cart",
-          products: cartProducts,
-          totalPrice: cart.totalPrice,
-        });
+exports.addToCart = (req, res, next) => {
+  //hidden input in addToCart form sends value of prodId
+  const cartProd_id = req.body.cartProd_id;
+  //addToCart func only executed when product fetched using prodId, this is needed as we need,
+  Product.fetchProduct(cartProd_id).then((product) => {
+    req.user
+      .addProdToCart(product)
+      .then((result) => {
+        console.log("product added to cart");
+        res.redirect("/cart");
       })
       .catch((err) => {
         console.log(err);
@@ -86,48 +84,46 @@ exports.getCart = (req, res, next) => {
   });
 };
 
-exports.addToCart = (req, res, next) => {
-  //hidden input in addToCart form sends value of prodId
+exports.postDeleteProduct = (req, res, next) => {
   const cartProd_id = req.body.cartProd_id;
-  //addToCart func only executed when product fetched using prodId, this is needed as we need,
-  Product.fetchProduct(cartProd_id)
-  .then((product) => {
+  //to delete, fetch the prod to be deleted(as it's price info is needed to update totalPrice) then,
+  //deleted it from cart
+  Product.fetchProduct(cartProd_id).then((product) => {
     req.user
-    .addProdToCart(product)
-    .then((result) => {
-      console.log("product added to cart");
-      res.redirect("/");
+      .deleteProdFromCart(product)
+      .then((result) => {
+        console.log("product deleted from cart");
+        res.redirect("/cart");
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  });
+};
+
+exports.getOrders = (req, res, next) => {
+  req.user
+    .getOrders()
+    .then((orders) => {
+      console.log(orders)
+      res.render("shop/orders", {
+        pageTitle: "My Orders",
+        path: "/orders",
+        orders: orders,
+      });
     })
     .catch((err) => {
       console.log(err);
     });
-  })
-  
 };
 
-exports.getOrders = (req, res, next) => {
-  res.render("shop/orders", {
-    pageTitle: "My Orders",
-    path: "/orders",
-  });
-};
-
-exports.getCheckout = (req, res, next) => {
-  res.render("shop/checkout", {
-    path: "/checkout",
-    pageTitle: "Checkout",
-  });
-};
-
-exports.postDeleteProduct = (req, res, next) => {
-  const prodId = req.body.prodId;
-
-  //fetch product using prodId and find Product whose id, price will be used to,
-  //delete product from cart and update the totalPrice
-  Product.findByPk(prodId)
-    .then((fetchedProduct) => {
-      Cart.deleteCartProduct(prodId, fetchedProduct.price);
-      res.redirect("/cart");
+exports.postOrder = (req, res, next) => {
+  //createOrder from user
+  req.user
+    .createOrder()
+    .then((result) => {
+      console.log("order placed");
+      res.redirect("/orders");
     })
     .catch((err) => {
       console.log(err);
