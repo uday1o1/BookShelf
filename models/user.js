@@ -90,10 +90,11 @@ class User {
     //has array of cart products
     let newCartProducts = [...this.cart.products];
     //store qty of prod to be deleted from deleted of data(for subtracting from totalPrice)
-    const qtyOfDeletedProd = this.cart.products[cartProductIndex].qty
+    const qtyOfDeletedProd = this.cart.products[cartProductIndex].qty;
 
     newCartProducts.splice(cartProductIndex);
-    const newTotalPrice = (this.cart.totalPrice - (product.price * qtyOfDeletedProd));
+    const newTotalPrice =
+      this.cart.totalPrice - product.price * qtyOfDeletedProd;
     const newCart = {
       products: [...newCartProducts],
       totalPrice: newTotalPrice,
@@ -101,8 +102,8 @@ class User {
 
     const db = getDb();
     return db
-    .collection("users")
-    .updateOne({ _id: new ObjectId(this._id) }, { $set: { cart: newCart } })
+      .collection("users")
+      .updateOne({ _id: new ObjectId(this._id) }, { $set: { cart: newCart } })
       .then((result) => {
         return result;
       })
@@ -137,6 +138,42 @@ class User {
           };
         });
       });
+  }
+
+  createOrder() {
+    const db = getDb();
+    //to add all products to order with all prod data use getCart func that maps all data
+    return this.getCart()
+      .then((productsWithData) => {
+        //give userId who placed order(to track in order collection)
+        const orderCart = {
+          products: productsWithData,
+          totalPrice: this.cart.totalPrice,
+          user_id: this._id,
+        };
+        //to create order need to save order in db and update user.cart(reset products and totalPrice)
+        return db.collection("orders").insertOne(orderCart);
+      })
+      .then((result) => {
+        //reset cart(after order placed and data stored in db)
+        this.cart.products = [];
+        this.cart.totalPrice = 0;
+        return db
+          .collection("users")
+          .updateOne(
+            { _id: new ObjectId(this._id) },
+            { $set: { cart: this.cart } }
+          );
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }
+
+  getOrders() {
+    //need to find all orders from orders collecetion whose user_id matched that of person who ordered
+    const db = getDb();
+    return db.collection("orders").find({ user_id: new ObjectId(this._id) }).toArray();
   }
 }
 

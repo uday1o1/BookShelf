@@ -102,15 +102,30 @@ exports.postDeleteProduct = (req, res, next) => {
 };
 
 exports.getOrders = (req, res, next) => {
-  res.render("shop/orders", {
-    pageTitle: "My Orders",
-    path: "/orders",
-  });
+  req.user
+    .getOrders()
+    .then((orders) => {
+      console.log(orders)
+      res.render("shop/orders", {
+        pageTitle: "My Orders",
+        path: "/orders",
+        orders: orders,
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 };
 
-exports.getCheckout = (req, res, next) => {
-  res.render("shop/checkout", {
-    path: "/checkout",
-    pageTitle: "Checkout",
-  });
+exports.postOrder = (req, res, next) => {
+  //createOrder from user
+  req.user
+    .createOrder()
+    .then((result) => {
+      console.log("order placed");
+      res.redirect("/orders");
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 };
