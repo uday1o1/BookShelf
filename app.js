@@ -2,8 +2,9 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
 
+const mongoose = require("mongoose");
+const dbConnect = require("./util/database").dbConnect;
 //returns mongoClient in cb
-const mongoConnect = require("./util/database").mongoConnect;
 const User = require("./models/user");
 
 //returns a new express app instance when the express() func is run, can be used to init server
@@ -19,12 +20,12 @@ app.set("views", "views");
 //all req going inside already take the path public so inside put path after public for links
 app.use(express.static(path.join(__dirname, "public")));
 
-//testUser login(no routes, every request goes through a "user")
+// testUser login(no routes, every request goes through a "user")
 app.use((req, res, next) => {
-  User.fetchUser("6457162054f13ccb94efe3de")
+  User.findById("645a027e3b8a718194017040")
     .then((user) => {
-      //add complete user instance to each user request(needed to access all user functions)
-      req.user = new User(user.username, user.email, user.cart, user._id);
+      //add complete mongoose user instance to each user request(needed to access all user functions)
+      req.user = user;
       next();
     })
     .catch((err) => {
@@ -48,6 +49,27 @@ app.use(shopRoute);
 app.use("/", error.err404);
 
 // start listening when client retreived from db
-mongoConnect(() => {
-  app.listen(3000);
-});
+dbConnect()
+  .then((result) => {
+    //create new user if not found in user collection
+    User.findOne().then((user) => {
+      //if no user found
+      if (!user) {
+        const user = new User({
+          name: "uday",
+          email: "uday@gmail.com",
+          cart: {
+            products: [],
+            totalPrice: 0,
+          },
+        });
+        user.save();
+      }
+
+      console.log("connected");
+      app.listen(3000);
+    });
+  })
+  .catch((err) => {
+    console.log(err);
+  });
