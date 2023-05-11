@@ -12,6 +12,7 @@ exports.getIndex = (req, res, next) => {
         prods: products,
         pageTitle: "Shop",
         path: "/",
+        loggedIn: req.loggedIn
       });
     })
     .catch((err) => {
@@ -27,6 +28,7 @@ exports.getProducts = (req, res, next) => {
         prods: products,
         pageTitle: "All Products",
         path: "/products",
+        loggedIn: req.loggedIn
       });
     })
     .catch((err) => {
@@ -45,6 +47,7 @@ exports.getProduct = (req, res, next) => {
         product: fetchedProduct,
         pageTitle: fetchedProduct.title,
         path: "/products",
+        loggedIn: req.loggedIn
       });
     })
     .catch((err) => {
@@ -60,6 +63,7 @@ exports.getCart = (req, res, next) => {
     products: req.user.cart.products,
     //directly use from userCartData
     totalPrice: req.user.cart.totalPrice,
+    loggedIn: req.loggedIn
   });
 };
 
@@ -105,6 +109,7 @@ exports.getOrders = (req, res, next) => {
         pageTitle: "My Orders",
         path: "/orders",
         orders: orders,
+        loggedIn: req.loggedIn
       });
     })
     .catch((err) => {

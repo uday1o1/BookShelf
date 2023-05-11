@@ -1,5 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const session = require("express-session");
 const path = require("path");
 
 const mongoose = require("mongoose");
@@ -19,6 +20,15 @@ app.set("views", "views");
 //assigning a folder so that it can serve static files
 //all req going inside already take the path public so inside put path after public for links
 app.use(express.static(path.join(__dirname, "public")));
+
+//initialize session object(can access session info on req)
+app.use(
+  session({
+    secret: "keyboard cat",
+    resave: false,
+    saveUninitialized: false,
+  })
+);
 
 // testUser login(no routes, every request goes through a "user")
 app.use((req, res, next) => {
