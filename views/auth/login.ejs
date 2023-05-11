@@ -1,0 +1,70 @@
+<%- include('../includes/head.ejs') %>
+<link rel="stylesheet" href="/css/login.css">
+</head>
+
+<body>
+    <%- include('../includes/navigation.ejs') %>
+
+    <main>
+        <br>
+        <br>
+        <form class="login-form" id="loginForm" action="/login" method="POST">
+            <div class="cont">
+                <div class="form sign-in">
+                    <h2>Welcome</h2>
+                    <label>
+                        <span>Email</span>
+                        <input type="email" name="signInEmail"/>
+                    </label>
+                    <label>
+                        <span>Password</span>
+                        <input type="password" name="signInPassword"/>
+                    </label>
+                    <p class="forgot-pass">Forgot password?</p>
+                    <button type="submit" formaction="/login" class="submit" id="loginButton">Sign In</button>
+                
+                </div>
+                <div class="sub-cont">
+                    <div class="img">
+                        <div class="img__text m--up">
+                        
+                            <h3>Don't have an account? Please Sign up!<h3>
+                        </div>
+                        <div class="img__text m--in">
+                        
+                            <h3>If you already have an account, just sign in.<h3>
+                        </div>
+                        <div class="img__btn">
+                            <span class="m--up">Sign Up</span>
+                            <span class="m--in">Sign In</span>
+                        </div>
+                    </div>
+                    <div class="form sign-up">
+                        <h2>Create your Account</h2>
+                        <label>
+                            <span>Name</span>
+                            <input type="text" name="signUpName"/>
+                        </label>
+                        <label>
+                            <span>Email</span>
+                            <input type="email" name="signUpEmail"/>
+                        </label>
+                        <label>
+                            <span>Password</span>
+                            <input type="password" name="signUpPassword"/>
+                        </label>
+                        <button type="submit" formaction="/signup" class="submit" id="loginButton">Sign Up</button>
+                        
+                    </div>
+                </div>
+            </div>
+
+        </form>
+            
+    <script>
+        document.querySelector('.img__btn').addEventListener('click', function() {
+            document.querySelector('.cont').classList.toggle('s--signup');
+        });
+    </script>
+    </main>
+<%- include('../includes/end.ejs') %>

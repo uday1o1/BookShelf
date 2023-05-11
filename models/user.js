@@ -9,6 +9,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  password: {
+    type: String,
+    // required: true,
+  },
   //defing cart schema associated with each user
   cart: {
     products: [
