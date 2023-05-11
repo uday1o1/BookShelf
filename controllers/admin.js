@@ -8,7 +8,7 @@ exports.getProducts = (req, res, next) => {
         prods: products,
         pageTitle: "Admin Products",
         path: "/admin/products",
-        loggedIn: req.loggedIn
+        loggedIn: req.session.loggedIn
       });
     })
     .catch((err) => {
@@ -23,12 +23,12 @@ exports.getAddProduct = (req, res, next) => {
     path: "/admin/add-product",
     //send null as true will populate form with product values
     editMode: null,
-    loggedIn: req.loggedIn
+    loggedIn: req.session.loggedIn
   });
 };
 
 exports.postAddProduct = (req, res, next) => {
-  console.log(req.user)
+  console.log(req.session.user)
   //create new moongose product instance
   const product = new Product({
     title: req.body.title,
@@ -36,7 +36,7 @@ exports.postAddProduct = (req, res, next) => {
     price: req.body.price,
     description: req.body.description,
     //whole user instance attatched mongoose picks object_id directly from it
-    user_id: req.user,
+    user_id: req.session.user._id,
   });
 
   //mongoose model object save method
@@ -70,7 +70,7 @@ exports.getEditProduct = (req, res, next) => {
         product: fetchedProduct,
         //sending empty path as it was being accessed in ejs file
         path: "",
-        loggedIn: req.loggedIn
+        loggedIn: req.session.loggedIn
       });
     })
     .catch((err) => {
@@ -80,7 +80,6 @@ exports.getEditProduct = (req, res, next) => {
 
 exports.postEditProduct = (req, res, next) => {
   const _id = req.body._id;
-  // const user_id = req.user._id;
 
   //find mongoose product then, if save on existing product then, it updates
   Product.findById(_id)
@@ -106,7 +105,7 @@ exports.postDeleteProduct = (req, res, next) => {
   //to delete, fetch the prod to be deleted(as it's price info is needed to update totalPrice) then,
   //deleted it from cart
   Product.findById(_id).then((product) => {
-    const cartProductIndex = req.user.cart.products.findIndex((prod) => {
+    const cartProductIndex = req.session.user.cart.products.findIndex((prod) => {
       return prod._id.toString() === product._id.toString();
     });
     //if cartIndex = -1, so prod not in cart so only delete from catalog,
@@ -123,7 +122,7 @@ exports.postDeleteProduct = (req, res, next) => {
         console.log(err);
       });
     } else {
-      req.user
+      req.session.user
         .deleteProdFromCart(product)
         .then(() => {
           console.log("product deleted from cart");

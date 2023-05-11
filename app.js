@@ -5,11 +5,19 @@ const path = require("path");
 
 const mongoose = require("mongoose");
 const dbConnect = require("./util/database").dbConnect;
+const MongoDBStore = require("connect-mongodb-session")(session);
+
 //returns mongoClient in cb
 const User = require("./models/user");
 
 //returns a new express app instance when the express() func is run, can be used to init server
 const app = express();
+
+//use mongoDbStore session to connect with db and store sessions
+const store = new MongoDBStore({
+  uri: "mongodb+srv://uday1o1:UguNnqf3xAgK7dKY@cluster0.k9zabyl.mongodb.net/shop?retryWrites=true&w=majority&ssl=true",
+  collection: "mySessions",
+});
 
 //setting ejs as template engine
 app.set("view engine", "ejs");
@@ -21,27 +29,16 @@ app.set("views", "views");
 //all req going inside already take the path public so inside put path after public for links
 app.use(express.static(path.join(__dirname, "public")));
 
-//initialize session object(can access session info on req)
+//initialize session object(do session config)(can access session info from req)
+//also initialize where to store session data
 app.use(
   session({
     secret: "keyboard cat",
     resave: false,
     saveUninitialized: false,
+    store: store
   })
 );
-
-// testUser login(no routes, every request goes through a "user")
-app.use((req, res, next) => {
-  User.findById("645a027e3b8a718194017040")
-    .then((user) => {
-      //add complete mongoose user instance to each user request(needed to access all user functions)
-      req.user = user;
-      next();
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-});
 
 //routes and controllers imported
 const adminRoute = require("./routes/admin");

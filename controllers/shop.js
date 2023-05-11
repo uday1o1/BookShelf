@@ -12,7 +12,7 @@ exports.getIndex = (req, res, next) => {
         prods: products,
         pageTitle: "Shop",
         path: "/",
-        loggedIn: req.loggedIn
+        loggedIn: req.session.loggedIn,
       });
     })
     .catch((err) => {
@@ -28,7 +28,7 @@ exports.getProducts = (req, res, next) => {
         prods: products,
         pageTitle: "All Products",
         path: "/products",
-        loggedIn: req.loggedIn
+        loggedIn: req.session.loggedIn,
       });
     })
     .catch((err) => {
@@ -47,7 +47,7 @@ exports.getProduct = (req, res, next) => {
         product: fetchedProduct,
         pageTitle: fetchedProduct.title,
         path: "/products",
-        loggedIn: req.loggedIn
+        loggedIn: req.session.loggedIn,
       });
     })
     .catch((err) => {
@@ -60,10 +60,10 @@ exports.getCart = (req, res, next) => {
     pageTitle: "My Shopping Cart",
     path: "/cart",
     //array of received cartProds
-    products: req.user.cart.products,
+    products: req.session.user.cart.products,
     //directly use from userCartData
-    totalPrice: req.user.cart.totalPrice,
-    loggedIn: req.loggedIn
+    totalPrice: req.session.user.cart.totalPrice,
+    loggedIn: req.session.loggedIn,
   });
 };
 
@@ -74,7 +74,7 @@ exports.addToCart = (req, res, next) => {
   //this is needed as we need product.price
   Product.findById(cartProd_id)
     .then((product) => {
-      req.user.addProdToCart(product).then((result) => {
+      req.session.user.addProdToCart(product).then((result) => {
         console.log("product added to cart");
         res.redirect("/cart");
       });
@@ -89,7 +89,7 @@ exports.postDeleteProduct = (req, res, next) => {
   //to delete, fetch the prod to be deleted(as it's price info is needed to update totalPrice) then,
   //deleted it from cart
   Product.findById(cartProd_id).then((product) => {
-    req.user
+    req.session.user
       .deleteProdFromCart(product)
       .then((result) => {
         console.log("product deleted from cart");
@@ -103,13 +103,13 @@ exports.postDeleteProduct = (req, res, next) => {
 
 exports.getOrders = (req, res, next) => {
   //find all orders based on the user that has placed the order
-  Order.find({ user_id: req.user._id })
+  Order.find({ user_id: req.session.user._id })
     .then((orders) => {
       res.render("shop/orders", {
         pageTitle: "My Orders",
         path: "/orders",
         orders: orders,
-        loggedIn: req.loggedIn
+        loggedIn: req.session.loggedIn,
       });
     })
     .catch((err) => {
@@ -119,15 +119,15 @@ exports.getOrders = (req, res, next) => {
 
 exports.postOrder = (req, res, next) => {
   const order = new Order({
-    user_id: req.user._id,
-    products: req.user.cart.products,
-    totalPrice: req.user.cart.totalPrice,
+    user_id: req.session.user._id,
+    products: req.session.user.cart.products,
+    totalPrice: req.session.user.cart.totalPrice,
   });
 
   order
     .save()
     .then((result) => {
-      req.user.clearCart();
+      req.session.user.clearCart();
     })
     .then(() => {
       console.log("order placed");
