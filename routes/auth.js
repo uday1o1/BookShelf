@@ -7,4 +7,6 @@ routes.post("/login", authController.postLogin);
 
 routes.post("/logout", authController.postLogout);
 
+routes.post("/signup", authController.postSignIn);
+
 module.exports = routes;

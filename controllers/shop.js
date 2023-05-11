@@ -60,9 +60,9 @@ exports.getCart = (req, res, next) => {
     pageTitle: "My Shopping Cart",
     path: "/cart",
     //array of received cartProds
-    products: req.session.user.cart.products,
+    products: req.user.cart.products,
     //directly use from userCartData
-    totalPrice: req.session.user.cart.totalPrice,
+    totalPrice: req.user.cart.totalPrice,
     loggedIn: req.session.loggedIn,
   });
 };
@@ -74,7 +74,7 @@ exports.addToCart = (req, res, next) => {
   //this is needed as we need product.price
   Product.findById(cartProd_id)
     .then((product) => {
-      req.session.user.addProdToCart(product).then((result) => {
+      req.user.addProdToCart(product).then((result) => {
         console.log("product added to cart");
         res.redirect("/cart");
       });
@@ -89,7 +89,7 @@ exports.postDeleteProduct = (req, res, next) => {
   //to delete, fetch the prod to be deleted(as it's price info is needed to update totalPrice) then,
   //deleted it from cart
   Product.findById(cartProd_id).then((product) => {
-    req.session.user
+    req.user
       .deleteProdFromCart(product)
       .then((result) => {
         console.log("product deleted from cart");
@@ -103,7 +103,7 @@ exports.postDeleteProduct = (req, res, next) => {
 
 exports.getOrders = (req, res, next) => {
   //find all orders based on the user that has placed the order
-  Order.find({ user_id: req.session.user._id })
+  Order.find({ user_id: req.user._id })
     .then((orders) => {
       res.render("shop/orders", {
         pageTitle: "My Orders",
@@ -119,15 +119,15 @@ exports.getOrders = (req, res, next) => {
 
 exports.postOrder = (req, res, next) => {
   const order = new Order({
-    user_id: req.session.user._id,
-    products: req.session.user.cart.products,
-    totalPrice: req.session.user.cart.totalPrice,
+    user_id: req.user._id,
+    products: req.user.cart.products,
+    totalPrice: req.user.cart.totalPrice,
   });
 
   order
     .save()
     .then((result) => {
-      req.session.user.clearCart();
+      req.user.clearCart();
     })
     .then(() => {
       console.log("order placed");

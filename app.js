@@ -3,9 +3,9 @@ const bodyParser = require("body-parser");
 const session = require("express-session");
 const path = require("path");
 
-const mongoose = require("mongoose");
+//helper func for initializing db connect in separate file
 const dbConnect = require("./util/database").dbConnect;
-const MongoDBStore = require("connect-mongodb-session")(session);
+const dbStore = require("./util/database").dbStore;
 
 //returns mongoClient in cb
 const User = require("./models/user");
@@ -14,10 +14,7 @@ const User = require("./models/user");
 const app = express();
 
 //use mongoDbStore session to connect with db and store sessions
-const store = new MongoDBStore({
-  uri: "mongodb+srv://uday1o1:UguNnqf3xAgK7dKY@cluster0.k9zabyl.mongodb.net/shop?retryWrites=true&w=majority&ssl=true",
-  collection: "mySessions",
-});
+const store = dbStore();
 
 //setting ejs as template engine
 app.set("view engine", "ejs");
@@ -36,9 +33,25 @@ app.use(
     secret: "keyboard cat",
     resave: false,
     saveUninitialized: false,
-    store: store
+    store: store,
   })
 );
+
+app.use((req, res, next) => {
+  //if not logged in then no user to send with requests
+  if (!req.session.user) {
+    return next();
+  }
+  User.findById(req.session.user._id)
+    .then((user) => {
+      //if logIn done then add user to requests so mongoose helper functionc can be used again
+      req.user = user;
+      next();
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+});
 
 //routes and controllers imported
 const adminRoute = require("./routes/admin");

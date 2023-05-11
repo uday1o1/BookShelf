@@ -11,6 +11,7 @@
           >Products</a
         >
       </li>
+      <% if(loggedIn) { %>
       <li class="main-header__item">
         <a class="<%= path === '/cart' ? 'active' : '' %>" href="/cart">Cart</a>
       </li>
@@ -19,7 +20,6 @@
           >Orders</a
         >
       </li>
-      <% if(loggedIn) { %>
       <li class="main-header__item">
         <a
           class="<%= path === '/admin/add-product' ? 'active' : '' %>"
@@ -36,7 +36,24 @@
       </li>
       <% } %>
     </ul>
+    <% if(loggedIn) { %>
     <ul class="main-header__item-list">
+      <li class="main-header__item">
+        <form action="/logout" method="post">
+          <button type="submit">Log Out</button>
+        </form>
+      </li>
+    </ul>
+    <% } %> <% if(!loggedIn) { %>
+    <ul class="main-header__item-list">
+      <li class="main-header__item">
+        <a class="<%= path === '/login' ? 'active' : '' %>" href="/login"
+          >Login</a
+        >
+      </li>
+    </ul>
+    <% } %>
+    <!-- <ul class="main-header__item-list">
       <% if(path !== '/login') { %>
       <li class="main-header__item">
         <a class="<%= path === '/login' ? 'active' : '' %>" href="/login"
@@ -51,7 +68,7 @@
         </form>
       </li>
       <% } %>
-    </ul>
+    </ul> -->
   </nav>
 </header>
 

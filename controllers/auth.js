@@ -17,8 +17,15 @@ exports.postLogin = (req, res, next) => {
       //add complete mongoose user instance to each user request(needed to access all user functions)
       //add user to current session requests
       req.session.user = user;
-      console.log("logged in");
-      res.redirect("/");
+      //redirect after session saved
+      //no need to use save always just when .then(func) needed
+      req.session.save((err) => {
+        if (err) {
+          console.log(err);
+        }
+        console.log("logged in");
+        res.redirect("/");
+      });
     })
     .catch((err) => {
       console.log(err);
@@ -35,4 +42,9 @@ exports.postLogout = (req, res, next) => {
     }
     res.redirect("/");
   });
+};
+
+exports.postSignIn = (req, res, next) => {
+  res.redirect("/login");
+  req.session.loggedIn = false;
 };

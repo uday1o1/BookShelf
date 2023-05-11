@@ -28,7 +28,6 @@ exports.getAddProduct = (req, res, next) => {
 };
 
 exports.postAddProduct = (req, res, next) => {
-  console.log(req.session.user)
   //create new moongose product instance
   const product = new Product({
     title: req.body.title,
@@ -36,7 +35,7 @@ exports.postAddProduct = (req, res, next) => {
     price: req.body.price,
     description: req.body.description,
     //whole user instance attatched mongoose picks object_id directly from it
-    user_id: req.session.user._id,
+    user_id: req.user,
   });
 
   //mongoose model object save method
@@ -105,7 +104,7 @@ exports.postDeleteProduct = (req, res, next) => {
   //to delete, fetch the prod to be deleted(as it's price info is needed to update totalPrice) then,
   //deleted it from cart
   Product.findById(_id).then((product) => {
-    const cartProductIndex = req.session.user.cart.products.findIndex((prod) => {
+    const cartProductIndex = req.user.cart.products.findIndex((prod) => {
       return prod._id.toString() === product._id.toString();
     });
     //if cartIndex = -1, so prod not in cart so only delete from catalog,
@@ -122,7 +121,7 @@ exports.postDeleteProduct = (req, res, next) => {
         console.log(err);
       });
     } else {
-      req.session.user
+      req.user
         .deleteProdFromCart(product)
         .then(() => {
           console.log("product deleted from cart");
