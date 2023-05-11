@@ -36,6 +36,7 @@ app.use((req, res, next) => {
 //routes and controllers imported
 const adminRoute = require("./routes/admin");
 const shopRoute = require("./routes/shop");
+const authRoute = require("./routes/auth");
 const error = require("./controllers/error");
 
 //use body parser to parse through incoming data stream, put on top of order
@@ -44,6 +45,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 //only routes with /admin section will go inside(filtering routes)
 app.use("/admin", adminRoute);
 app.use(shopRoute);
+app.use(authRoute);
 
 //handle all others url reqs
 app.use("/", error.err404);
