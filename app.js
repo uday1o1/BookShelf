@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const path = require("path");
 
 const mongoose = require("mongoose");
+const dbConnect = require("./util/database").dbConnect;
 //returns mongoClient in cb
 const User = require("./models/user");
 
@@ -48,10 +49,7 @@ app.use(shopRoute);
 app.use("/", error.err404);
 
 // start listening when client retreived from db
-mongoose
-  .connect(
-    "mongodb+srv://uday1o1:UguNnqf3xAgK7dKY@cluster0.k9zabyl.mongodb.net/shop?retryWrites=true&w=majority&ssl=true"
-  )
+dbConnect()
   .then((result) => {
     //create new user if not found in user collection
     User.findOne().then((user) => {

@@ -61,22 +61,6 @@ exports.getCart = (req, res, next) => {
     //directly use from userCartData
     totalPrice: req.user.cart.totalPrice,
   });
-
-  // req.user
-  //   .getCart()
-  //   .then((cartProducts) => {
-  //     res.render("shop/cart", {
-  //       pageTitle: "My Shopping Cart",
-  //       path: "/cart",
-  //       //array of received cartProds
-  //       products: cartProducts,
-  //       //directly use from userCartData
-  //       totalPrice: req.user.cart.totalPrice,
-  //     });
-  //   })
-  //   .catch((err) => {
-  //     console.log(err);
-  //   });
 };
 
 exports.addToCart = (req, res, next) => {
