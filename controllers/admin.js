@@ -1,8 +1,8 @@
 const Product = require("../models/product");
-const ObjectId = require("mongodb").ObjectId;
 
+//using populate() or select() we can choose which fields to populate and which to leave at given path
 exports.getProducts = (req, res, next) => {
-  Product.fetchAllProducts()
+  Product.find()
     .then((products) => {
       res.render("admin/products", {
         prods: products,
@@ -26,15 +26,20 @@ exports.getAddProduct = (req, res, next) => {
 };
 
 exports.postAddProduct = (req, res, next) => {
-  const title = req.body.title;
-  const imageUrl = req.body.imageUrl;
-  const price = req.body.price;
-  const description = req.body.description;
-  const user_id = req.user._id;
+  console.log(req.user)
+  //create new moongose product instance
+  const product = new Product({
+    title: req.body.title,
+    imageUrl: req.body.imageUrl,
+    price: req.body.price,
+    description: req.body.description,
+    //whole user instance attatched mongoose picks object_id directly from it
+    user_id: req.user,
+  });
 
-  const prod = new Product(title, imageUrl, price, description, null, user_id);
-  prod
-    .saveProduct()
+  //mongoose model object save method
+  product
+    .save()
     .then((result) => {
       //result only gotten when product object created and saved to db collection
       console.log("added new product to catalog");
@@ -55,7 +60,7 @@ exports.getEditProduct = (req, res, next) => {
   //editMode also sent so that form can have prevous product data preloaded for editing,
   //else new product so empty form
   //need to fetch product as it's attributes accessed to populate ejs form
-  Product.fetchProduct(_id)
+  Product.findById(_id)
     .then((fetchedProduct) => {
       res.render("admin/editProduct", {
         pageTitle: "Edit Product",
@@ -72,16 +77,17 @@ exports.getEditProduct = (req, res, next) => {
 
 exports.postEditProduct = (req, res, next) => {
   const _id = req.body._id;
-  const title = req.body.title;
-  const imageUrl = req.body.imageUrl;
-  const price = req.body.price;
-  const description = req.body.description;
-  const user_id = req.user._id;
+  // const user_id = req.user._id;
 
-  const prod = new Product(title, imageUrl, price, description, _id, user_id);
-
-  prod
-    .saveProduct()
+  //find mongoose product then, if save on existing product then, it updates
+  Product.findById(_id)
+    .then((product) => {
+      product.title = req.body.title;
+      product.imageUrl = req.body.imageUrl;
+      product.price = req.body.price;
+      product.description = req.body.description;
+      return product.save();
+    })
     .then((result) => {
       console.log("updated product in catalog");
       res.redirect("/admin/products");
@@ -96,22 +102,23 @@ exports.postDeleteProduct = (req, res, next) => {
   //before deleting whole product need to delete it from cart first,
   //to delete, fetch the prod to be deleted(as it's price info is needed to update totalPrice) then,
   //deleted it from cart
-  Product.fetchProduct(_id).then((product) => {
+  Product.findById(_id).then((product) => {
     const cartProductIndex = req.user.cart.products.findIndex((prod) => {
       return prod._id.toString() === product._id.toString();
     });
     //if cartIndex = -1, so prod not in cart so only delete from catalog,
     //no need to call deleteCartFunc
     if (cartProductIndex === -1) {
-      //deleted product from catalog
-      Product.deleteProduct(_id)
-        .then(() => {
-          console.log("deleted product from catalog");
-          res.redirect("/admin/products");
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+    //deleted product from catalog,
+    //using mongoose find and remove func
+    Product.findByIdAndRemove(_id)
+      .then(() => {
+        console.log("deleted product from catalog");
+        res.redirect("/admin/products");
+      })
+      .catch((err) => {
+        console.log(err);
+      });
     } else {
       req.user
         .deleteProdFromCart(product)
@@ -120,7 +127,7 @@ exports.postDeleteProduct = (req, res, next) => {
         })
         .then(() => {
           //deleted product from catalog
-          Product.deleteProduct(_id);
+          Product.findByIdAndRemove(_id);
         })
         .then(() => {
           console.log("deleted product from catalog");

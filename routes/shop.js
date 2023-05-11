@@ -12,7 +12,7 @@ routes.get("/products/:prodId", shopController.getProduct);
 
 routes.get("/cart", shopController.getCart);
 
-// //addToCart extracts prodId of product whose details page was opened
+// // //addToCart extracts prodId of product whose details page was opened
 routes.post("/cart", shopController.addToCart);
 
 routes.post("/delete-cart-product", shopController.postDeleteProduct);
