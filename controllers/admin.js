@@ -55,7 +55,6 @@ exports.getEditProduct = (req, res, next) => {
   //fetching the productId of item to be eddited from url parameters
   const _id = req.params.prodId;
   //fetching query from url, which will be true if in editMode
-  //query will be accessed from part of url after '?' as key:value pairs, where each query is separated by '&'
   const editMode = req.query.editMode;
 
   //editMode also sent so that form can have prevous product data preloaded for editing,

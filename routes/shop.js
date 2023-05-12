@@ -1,8 +1,8 @@
 const express = require("express");
 const routes = express.Router();
 const shopController = require("../controllers/shop");
-
-routes.get("/", shopController.getIndex);
+const isLoggedIn = require("../middleware/isLoggedIn");
+isLoggedIn, routes.get("/", shopController.getIndex);
 
 routes.get("/products", shopController.getProducts);
 
@@ -13,12 +13,16 @@ routes.get("/products/:prodId", shopController.getProduct);
 routes.get("/cart", shopController.getCart);
 
 // // //addToCart extracts prodId of product whose details page was opened
-routes.post("/cart", shopController.addToCart);
+routes.post("/cart", isLoggedIn, shopController.addToCart);
 
-routes.post("/delete-cart-product", shopController.postDeleteProduct);
+routes.post(
+  "/delete-cart-product",
+  isLoggedIn,
+  shopController.postDeleteProduct
+);
 
-routes.get("/orders", shopController.getOrders);
+routes.get("/orders", isLoggedIn, shopController.getOrders);
 
-routes.post("/checkout", shopController.postOrder);
+routes.post("/checkout", isLoggedIn, shopController.postOrder);
 
 module.exports = routes;

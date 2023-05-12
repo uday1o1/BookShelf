@@ -53,7 +53,7 @@ exports.postLogin = (req, res, next) => {
         }
         //if pswd not matched
         else {
-          req.flash("error", "Pls enter the correct password");
+          req.flash("error", "Please enter the correct password");
           console.log("wrong pswd");
           return res.redirect("/login");
         }
