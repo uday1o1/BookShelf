@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    // required: true,
+    required: true,
   },
   //defing cart schema associated with each user
   cart: {

@@ -1,7 +1,9 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const session = require("express-session");
+const flash = require("connect-flash");
 const path = require("path");
+require('dotenv').config()
 
 //helper func for initializing db connect in separate file
 const dbConnect = require("./util/database").dbConnect;
@@ -30,12 +32,15 @@ app.use(express.static(path.join(__dirname, "public")));
 //also initialize where to store session data
 app.use(
   session({
-    secret: "keyboard cat",
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     store: store,
   })
 );
+
+//each req has flash now(use to send temporary info across requests in a session)
+app.use(flash());
 
 app.use((req, res, next) => {
   //if not logged in then no user to send with requests
