@@ -5,6 +5,5 @@ exports.err404 = (req, res, next) => {
     .render("err404", {
       pageTitle: "Page Not Found",
       path: "/err404",
-      loggedIn: req.session.loggedIn,
     });
 };

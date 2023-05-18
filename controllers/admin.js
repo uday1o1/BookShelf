@@ -8,7 +8,6 @@ exports.getProducts = (req, res, next) => {
         prods: products,
         pageTitle: "Admin Products",
         path: "/admin/products",
-        loggedIn: req.session.loggedIn
       });
     })
     .catch((err) => {
@@ -23,7 +22,6 @@ exports.getAddProduct = (req, res, next) => {
     path: "/admin/add-product",
     //send null as true will populate form with product values
     editMode: null,
-    loggedIn: req.session.loggedIn
   });
 };
 
@@ -68,7 +66,6 @@ exports.getEditProduct = (req, res, next) => {
         product: fetchedProduct,
         //sending empty path as it was being accessed in ejs file
         path: "",
-        loggedIn: req.session.loggedIn
       });
     })
     .catch((err) => {

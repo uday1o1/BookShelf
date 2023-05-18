@@ -17,6 +17,7 @@
                             <form action="/delete-cart-product" method="POST">
                                 <input type="hidden" value="<%= prod._id %>" name="cartProd_id">
                                 <button class="btn danger" type="submit">Delete</button>
+
                             </form>
                         </li>
                     <% }) %>
@@ -25,9 +26,9 @@
                 <div class="centered">
                     <form action="/checkout" method="POST">
                         <button type="submit" class="btn">Order Now!</button>
+
                     </form>
                 </div>
-                
             <% } else { %>
                 <h1>No Products in Cart!</h1>
             <% } %>

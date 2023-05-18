@@ -2,6 +2,18 @@ const User = require("../models/user");
 const bcrypt = require("bcrypt");
 //setting salt round which tells bcrypt amount of time for pswd hashing
 const saltRounds = 10;
+const nodemailer = require("nodemailer");
+const sgTransport = require("nodemailer-sendgrid-transport");
+
+//init nodemailer with sendgrid account through api key
+const options = {
+  auth: {
+    api_key:
+      "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",
+  },
+};
+
+const mailer = nodemailer.createTransport(sgTransport(options));
 
 exports.getLogin = (req, res, next) => {
   //flash msg is array of flashed strings, to send null if no flash so set value in variable if available
@@ -16,7 +28,6 @@ exports.getLogin = (req, res, next) => {
   res.render("auth/login", {
     path: "/login",
     pageTitle: "Login Page",
-    loggedIn: req.session.loggedIn,
     errMessage: errMessage,
   });
 };
@@ -115,6 +126,21 @@ exports.postSignIn = (req, res, next) => {
             console.log("new user created");
             req.session.loggedIn = false;
             res.redirect("/login");
+
+            //need to send mail to new user for successful signUp
+            const email = {
+              to: signUpEmail,
+              from: "uday1o1arora@gmail.com",
+              subject: "Thanks for signing up at the bookShelf",
+              text: "Happy Reading !!!",
+              html: "<b>Happy Reading !!!</b>",
+            };
+            mailer.sendMail(email, function (err, res) {
+              if (err) {
+                console.log(err);
+              }
+              console.log(res);
+            });
           })
           .catch((err) => {
             console.log(err);
