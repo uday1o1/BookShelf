@@ -1,15 +1,16 @@
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
+require("dotenv").config();
 //setting salt round which tells bcrypt amount of time for pswd hashing
 const saltRounds = 10;
 const nodemailer = require("nodemailer");
 const sgTransport = require("nodemailer-sendgrid-transport");
+const crypto = require("crypto");
 
 //init nodemailer with sendgrid account through api key
 const options = {
   auth: {
-    api_key:
-      "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",
+    api_key: process.env.SENDGRID_API_KEY,
   },
 };
 
@@ -128,6 +129,7 @@ exports.postSignIn = (req, res, next) => {
             res.redirect("/login");
 
             //need to send mail to new user for successful signUp
+            //need to set up authorized sender in sendGrid first
             const email = {
               to: signUpEmail,
               from: "uday1o1arora@gmail.com",
@@ -135,11 +137,11 @@ exports.postSignIn = (req, res, next) => {
               text: "Happy Reading !!!",
               html: "<b>Happy Reading !!!</b>",
             };
-            mailer.sendMail(email, function (err, res) {
+            mailer.sendMail(email, function (err, result) {
               if (err) {
                 console.log(err);
               }
-              console.log(res);
+              console.log(result);
             });
           })
           .catch((err) => {
@@ -150,4 +152,80 @@ exports.postSignIn = (req, res, next) => {
     .catch((err) => {
       console.log(err);
     });
+};
+
+exports.getResetPass = (req, res, next) => {
+  let errMessage = req.flash("error");
+  if (errMessage.length > 0) {
+    //latest msg in start of array
+    errMessage = errMessage[0];
+  } else {
+    //no error so no need to flash
+    errMessage = null;
+  }
+
+  res.render("auth/reset", {
+    path: "/reset-pass",
+    pageTitle: "Reset User Password Page",
+    errMessage: errMessage,
+  });
+};
+
+exports.postResetPass = (req, res, next) => {
+  const resetEmail = req.body.resetEmail;
+
+  //use crypto to make 32 bit token(generated as hex convert to string)
+  crypto.randomBytes(32, (err, buffer) => {
+    if (err) {
+      console.log(err);
+      return res.redirect("/reset-pass");
+    }
+
+    const token = buffer.toString("hex");
+
+    User.findOne({ email: resetEmail })
+      .then((user) => {
+        if (!user) {
+          req.flash(
+            "error",
+            "This user does not exist please type the correct email id"
+          );
+          console.log("email not in db for pass reset");
+          return res.redirect("/reset-pass");
+        }
+
+        //add token to user db with token expiry of 1hr from token generation
+        user.resetToken = token;
+        user.resetTokenExpiry = Date.now() + 3600000;
+        return user.save();
+      })
+      .then((result) => {
+        req.flash(
+          "error",
+          "The password reset link has been sent to your mail"
+        );
+        console.log("user exists, mail sent");
+        res.redirect("/login");
+
+        //after token generated and saved in user db then send mail with token
+        const email = {
+          to: resetEmail,
+          from: "uday1o1arora@gmail.com",
+          subject: "Reset User Password",
+          html: `
+        <p>Click the below link to reset your password</p>
+        <a href="http://localhost:3000/login/new-pass/${token}">Reset Password</a>
+        `,
+        };
+        mailer.sendMail(email, function (err, result) {
+          if (err) {
+            console.log(err);
+          }
+          console.log(result);
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  });
 };

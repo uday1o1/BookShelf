@@ -9,4 +9,7 @@ routes.post("/logout", authController.postLogout);
 
 routes.post("/signup", authController.postSignIn);
 
+routes.get("/reset-pass", authController.getResetPass);
+routes.post("/reset-pass", authController.postResetPass);
+
 module.exports = routes;

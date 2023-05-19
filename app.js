@@ -31,6 +31,9 @@ app.set("views", "views");
 //all req going inside already take the path public so inside put path after public for links
 app.use(express.static(path.join(__dirname, "public")));
 
+//use body parser to parse through incoming data stream, put on top of order
+app.use(bodyParser.urlencoded({ extended: false }));
+
 // app.use(cookieParser(process.env.COOKIE_PARSER_SECRET));
 
 //initialize session object(do session config)(can access session info from req)
@@ -47,6 +50,10 @@ app.use(
 //after session created(as csrf uses sessions)
 //sending csrfProttection middle ware with each post req
 // app.use(csrf(process.env.CSRF_SECRET));
+// app.use((req, res, next) => {
+//   res.locals.csrfToken = req.csrfToken();
+//   next();
+// });
 
 //each req has flash now(use to send temporary info across requests in a session)
 app.use(flash());
@@ -72,7 +79,6 @@ app.use((req, res, next) => {
 //define a local response variable
 app.use((req, res, next) => {
   res.locals.loggedIn = req.session.loggedIn;
-  // res.locals.csrfTokenValue = req.csrfToken();
   next();
 });
 
@@ -81,9 +87,6 @@ const adminRoute = require("./routes/admin");
 const shopRoute = require("./routes/shop");
 const authRoute = require("./routes/auth");
 const error = require("./controllers/error");
-
-//use body parser to parse through incoming data stream, put on top of order
-app.use(bodyParser.urlencoded({ extended: false }));
 
 //only routes with /admin section will go inside(filtering routes)
 app.use("/admin", adminRoute);

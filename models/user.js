@@ -13,6 +13,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  resetToken: {
+    type: String,
+  },
+  resetTokenExpiry: {
+    type: Date,
+  },
   //defing cart schema associated with each user
   cart: {
     products: [
